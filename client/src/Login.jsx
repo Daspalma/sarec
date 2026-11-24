@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-
-const API_AUTH = "http://localhost:3000/api/auth";
+import { autenticar } from "./api.js";
 
 export default function Login({ onLogin }) {
   const [email, setEmail] = useState("");
@@ -18,18 +17,7 @@ export default function Login({ onLogin }) {
     setErro("");
 
     try {
-      const res = await fetch(`${API_AUTH}/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, senha }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.mensagem || "Falha ao autenticar.");
-      }
-
-      // Sucesso
+      const data = await autenticar(email, senha);
       onLogin(data.usuario);
     } catch (err) {
       setErro(err.message || "Erro de conexão com o servidor.");

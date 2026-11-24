@@ -79,3 +79,7 @@ JavaScript pode ser usado tanto no servidor quanto na interface, o que facilita 
 ## Limites deste exemplo
 
 É uma base didática, sem login, permissões, testes automatizados ou integração com serviços bancários. A auditoria identifica um usuário de demonstração fixo. Não deve ser usada para movimentar dinheiro real.
+
+## Publicação no Netlify
+
+O Netlify publica a interface React da pasta `client`. Sem `VITE_API_URL`, o site usa um modo de demonstração que guarda os lançamentos no armazenamento local do navegador; cada navegador mantém seus próprios dados. Para apontar a interface a uma API hospedada, defina `VITE_API_URL` com a URL base dessa API no Netlify.

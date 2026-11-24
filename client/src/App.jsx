@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Login from "./Login.jsx";
-
-const API = "http://localhost:3000/api/transacoes";
+import { excluirTransacao, listarTransacoes, obterSaldo, salvarTransacao } from "./api.js";
 const dinheiro = (valor) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(valor);
 
@@ -36,10 +35,9 @@ export default function App() {
 
   const carregar = useCallback(async () => {
     try {
-      const [listaResposta, saldoResposta] = await Promise.all([fetch(API), fetch(`${API}/saldo`)]);
-      if (!listaResposta.ok || !saldoResposta.ok) throw new Error("Não foi possível carregar os dados.");
-      setTransacoes(await listaResposta.json());
-      setSaldo(await saldoResposta.json());
+      const [lista, resumo] = await Promise.all([listarTransacoes(), obterSaldo()]);
+      setTransacoes(lista);
+      setSaldo(resumo);
       setMensagem("");
     } catch {
       setMensagem("Não consegui acessar a API. Confira se o servidor está ligado.");
@@ -58,17 +56,7 @@ export default function App() {
     evento.preventDefault();
     const dados = { ...form, valor: Number(form.valor) };
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        "x-usuario": encodeURIComponent(usuario?.nome || "aluno"),
-      };
-      const resposta = await fetch(editando ? `${API}/${editando}` : API, {
-        method: editando ? "PUT" : "POST",
-        headers,
-        body: JSON.stringify(dados),
-      });
-      const resultado = resposta.status === 204 ? {} : await resposta.json();
-      if (!resposta.ok) throw new Error(resultado.erros?.join(" ") || resultado.mensagem || "Não foi possível salvar.");
+      await salvarTransacao(editando, dados, usuario?.nome || "aluno");
       setForm({ descricao: "", valor: "", tipo: "DESPESA" });
       setEditando(null);
       setMensagem("Lançamento salvo.");
@@ -87,11 +75,7 @@ export default function App() {
   async function excluir(id) {
     if (!window.confirm("Marcar este lançamento como excluído? Ele continuará salvo para auditoria.")) return;
     try {
-      const headers = {
-        "x-usuario": encodeURIComponent(usuario?.nome || "aluno"),
-      };
-      const resposta = await fetch(`${API}/${id}`, { method: "DELETE", headers });
-      if (!resposta.ok) throw new Error("Não foi possível excluir o lançamento.");
+      await excluirTransacao(id, usuario?.nome || "aluno");
       setMensagem("Lançamento marcado como excluído.");
       await carregar();
     } catch (erro) {
