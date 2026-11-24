@@ -1,0 +1,28 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum TipoTransacao {
+  RECEITA
+  DESPESA
+}
+
+model Transacao {
+  id           Int            @id @default(autoincrement())
+  descricao    String
+  // Guardamos centavos inteiros para evitar erros de arredondamento.
+  valorCentavos Int
+  tipo         TipoTransacao
+  criadoPor    String
+  atualizadoPor String
+  criadoEm     DateTime       @default(now())
+  atualizadoEm DateTime       @updatedAt
+  excluidoEm   DateTime?
+
+  @@index([excluidoEm, criadoEm])
+}
